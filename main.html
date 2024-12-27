@@ -1,18 +1,191 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>I'm not a robot</title>
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <main>
-      <!-- solution start -->
-      
-      <!-- solution end -->
-    </main>
-    <script src="./script.js"></script>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Human Verification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+
+        .flex {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .img {
+            width: 100px;
+            height: 100px;
+            margin: 10px;
+            border: 2px solid #555;
+            cursor: pointer;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .selected {
+            border-color: rgb(0, 195, 255);
+        }
+
+        button {
+            margin: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        #reset {
+            display: none;
+        }
+
+        p {
+            font-size: 18px;
+            color: #333;
+        }
+
+        .img1 {
+            background-image: url("https://picsum.photos/id/237/100/100");
+        }
+
+        .img2 {
+            background-image: url("https://picsum.photos/seed/picsum/100/100");
+        }
+
+        .img3 {
+            background-image: url("https://picsum.photos/100/100?grayscale");
+        }
+
+        .img4 {
+            background-image: url("https://picsum.photos/100/100?blur");
+        }
+
+        .img5 {
+            background-image: url("https://picsum.photos/100/100?random=1");
+        }
+    </style>
+</head>
+<body>
+    <h3 id="h">Please click on the identical tiles to verify that you are not a robot.</h3>
+    <div id="image-container" class="flex"></div>
+    <button id="reset">Reset</button>
+    <script>
+        // Utility function to shuffle array
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // State variables
+        let selectedImages = [];
+        let repeatedImageClass = "";
+
+        // Initialization function
+        function initialize() {
+            const container = document.getElementById('image-container');
+            if (!container) {
+                const containerDiv = document.createElement('div');
+                containerDiv.id = 'image-container';
+                containerDiv.className = 'flex';
+                document.body.appendChild(containerDiv);
+            }
+            const imageContainer = document.getElementById('image-container');
+            imageContainer.innerHTML = "";
+
+            // Reset state
+            selectedImages = [];
+            const resetButton = document.getElementById("reset");
+            if (resetButton) resetButton.style.display = "none";
+
+            const verifyButton = document.getElementById("verify");
+            if (verifyButton) verifyButton.remove();
+
+            const para = document.getElementById("para");
+            if (para) para.remove();
+
+            // Generate image classes and pick one to repeat
+            const imageClasses = ["img1", "img2", "img3", "img4", "img5"];
+            repeatedImageClass = imageClasses[Math.floor(Math.random() * imageClasses.length)];
+            const images = [...imageClasses, repeatedImageClass];
+            shuffle(images);
+
+            // Render images
+            images.forEach((imgClass, index) => {
+                const img = document.createElement("div");
+                img.className = `${imgClass} img`;
+                img.setAttribute("data-index", index);
+                img.addEventListener("click", () => handleImageClick(img, imgClass));
+                imageContainer.appendChild(img);
+            });
+        }
+
+        function handleImageClick(imageElement, imgClass) {
+            // Prevent double-clicking the same image
+            if (selectedImages.includes(imageElement)) return;
+
+            // Highlight selected image
+            imageElement.classList.add("selected");
+
+            // Add clicked image to selection
+            selectedImages.push(imageElement);
+
+            // Show reset button
+            const resetButton = document.getElementById("reset");
+            if (resetButton) resetButton.style.display = "block";
+
+            // If two images are selected
+            if (selectedImages.length === 2) {
+                // Show verify button
+                if (!document.getElementById("verify")) {
+                    const verifyButton = document.createElement("button");
+                    verifyButton.id = "verify";
+                    verifyButton.innerHTML = "Verify";
+                    verifyButton.addEventListener("click", handleVerify);
+                    document.body.appendChild(verifyButton);
+                }
+            }
+        }
+
+        function handleVerify() {
+            const para = document.createElement("p");
+            para.id = "para";
+
+            // Check if the two selected images are identical
+            if (selectedImages[0].className === selectedImages[1].className) {
+                para.innerHTML = "You are a human. Congratulations!";
+            } else {
+                para.innerHTML = "We can't verify you as a human. You selected the non-identical tiles.";
+            }
+
+            // Remove verify button
+            const verifyButton = document.getElementById("verify");
+            if (verifyButton) verifyButton.remove();
+
+            // Add result message
+            document.body.appendChild(para);
+        }
+
+        // Create reset button if not present
+        let resetButton = document.getElementById("reset");
+        if (!resetButton) {
+            resetButton = document.createElement("button");
+            resetButton.id = "reset";
+            resetButton.innerHTML = "Reset";
+            resetButton.style.display = "none";
+            resetButton.addEventListener("click", initialize);
+            document.body.appendChild(resetButton);
+        }
+
+        // Initial render
+        initialize();
+    </script>
+</body>
 </html>
